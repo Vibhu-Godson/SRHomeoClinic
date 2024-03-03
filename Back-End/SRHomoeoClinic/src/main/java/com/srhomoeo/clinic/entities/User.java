@@ -70,8 +70,16 @@ public class User {
 	}
 	
 	
+	public List<Comment> getComments() {
+		return comments;
+	}
+	public void setComments(List<Comment> comments) {
+		this.comments = comments;
+	}
+
+
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private long id;
 	
 	@Column(name="user_name", nullable=false, length = 100)
@@ -83,6 +91,11 @@ public class User {
 	private String password;
 	private String about;
 	
-	@OneToMany(mappedBy="user", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy="user", cascade = CascadeType.MERGE)
 	private List<Post> posts = new ArrayList<>();
+	
+	@OneToMany(mappedBy="user", cascade = CascadeType.MERGE)
+	private List<Comment> comments = new ArrayList<>();
+	
+	
 }

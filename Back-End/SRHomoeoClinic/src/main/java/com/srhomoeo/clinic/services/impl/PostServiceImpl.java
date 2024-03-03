@@ -12,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.srhomoeo.clinic.entities.Category;
@@ -20,7 +21,6 @@ import com.srhomoeo.clinic.entities.User;
 import com.srhomoeo.clinic.exceptions.ResourceNotFoundException;
 import com.srhomoeo.clinic.payloads.PostDto;
 import com.srhomoeo.clinic.payloads.PostResponse;
-import com.srhomoeo.clinic.payloads.UserDto;
 import com.srhomoeo.clinic.repositories.CategoryRepo;
 import com.srhomoeo.clinic.repositories.PostRepo;
 import com.srhomoeo.clinic.repositories.UserRepo;
@@ -40,7 +40,7 @@ public class PostServiceImpl implements PostService{
 	
 	@Autowired
 	private ModelMapper modelMapper;
-	
+
 	@Override
 	public PostDto createPost(PostDto postDto, Integer userId, Integer categoryId) {
 		// TODO Auto-generated method stub
@@ -66,12 +66,13 @@ public class PostServiceImpl implements PostService{
 		post.setTitle(postDto.getTitle());
 		post.setAddedDate(post.getAddedDate());
 		post.setContent(postDto.getContent());
+		post.setImageName(postDto.getImageName());
 		
 		if(post.getCategory() != null) {
 			Category category = this.categoryRepo.findById(postDto.getCategory().getCategoryId())
 			.orElseThrow(()-> new ResourceNotFoundException("Category","categoryId",1));
 			post.setCategory(this.modelMapper.map(category, Category.class));
-			System.out.println("OK");
+//			System.out.println("OK");
 			
 //			postDto.getCategory().getCategoryId();
 		}
@@ -87,10 +88,11 @@ public class PostServiceImpl implements PostService{
 	}
 
 	@Override
-	public PostResponse getAllPosts(Integer pageNumber,Integer pageSize) {
+	public PostResponse getAllPosts(Integer pageNumber,Integer pageSize,String sortBy, boolean isAssending) {
 		// TODO Auto-generated method stub
-		
-		PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+		PageRequest pageRequest = PageRequest.of(pageNumber, pageSize,
+				isAssending?Sort.by(sortBy):Sort.by(sortBy).descending()
+						);
 		Page<Post> pagePost = this.postRepo.findAll(pageRequest);
 		PostResponse postResponse = new PostResponse();
 		List<Post> posts = pagePost.getContent();
@@ -114,30 +116,88 @@ public class PostServiceImpl implements PostService{
 	}
 
 	@Override
-	public List<PostDto> getPostsByCategory(Integer categoryId) {
+	public PostResponse getPostsByCategory(Integer categoryId, Integer pageNumber, Integer pageSize, String sortBy,
+			boolean isAssending) {
 		// TODO Auto-generated method stub
-		Category category = this.categoryRepo.findById(categoryId).orElseThrow(()-> new ResourceNotFoundException("Category","categoryId",categoryId));
-		List<Post> postByCategory = this.postRepo.findByCategory(category);
-		List<PostDto> postsDtoByCategory = postByCategory.stream().map((post)-> this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
-		return postsDtoByCategory;
+		
+		
+		Category category = this.categoryRepo.findById(categoryId)
+				.orElseThrow(()-> new ResourceNotFoundException("Category","categoryId",categoryId));
+		PageRequest pageRequest = PageRequest.of(pageNumber, pageSize,
+				isAssending?Sort.by(sortBy):Sort.by(sortBy).descending()
+						);
+		Page<Post> pagePost = this.postRepo.findByCategory(category, pageRequest);
+		List<PostDto> postsDtoByCategory = pagePost.getContent().stream()
+				.map((post)-> this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
+		PostResponse postResponse = new PostResponse();
+//		PageRequest.
+		postResponse.setPosts(postsDtoByCategory);
+		postResponse.setPageNumber(pagePost.getNumber());
+		postResponse.setLastPage(pagePost.isLast());
+		postResponse.setPageSize(pagePost.getSize());
+		postResponse.setTotalElements(pagePost.getTotalElements());
+		postResponse.setTotalPages(pagePost.getTotalPages());
+		return postResponse;
 	}
 
 	@Override
-	public List<PostDto> getPostByUser(Integer userId) {
+	public PostResponse getPostByUser(Integer userId,Integer pageNumber, Integer pageSize, String sortBy, boolean isAssending) {
 		// TODO Auto-generated method stub
 		User user = this.userRepo.findById(userId).orElseThrow(()-> new ResourceNotFoundException("User","UserId",userId));
-		List<Post> postsByUser = this.postRepo.findByUser(user);
-		List<PostDto> postDtosByUser = postsByUser.stream().map((post)->this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
-		return postDtosByUser;
+		PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, 
+				isAssending?Sort.by(sortBy):Sort.by(sortBy).descending()
+						);
+		Page<Post> pagePost = this.postRepo.findByUser(user,pageRequest);
+		
+		List<PostDto> postDtosByUser = pagePost.getContent().stream()
+				.map((post)->this.modelMapper.map(post, PostDto.class))
+				.collect(Collectors.toList());
+		
+		PostResponse postResponse = new PostResponse();
+		postResponse.setLastPage(pagePost.isLast());
+		postResponse.setPageNumber(pagePost.getNumber());
+		postResponse.setPageSize(pagePost.getSize());
+		postResponse.setPosts(postDtosByUser);
+		postResponse.setTotalElements(pagePost.getTotalElements());
+		postResponse.setTotalPages(pagePost.getTotalPages());
+		return postResponse;
 	}
 
 	@Override
-	public List<PostDto> searchPostByKeyword(String keyword) {
+	public PostResponse getPostByTitleContaining(String keyword, Integer pageNumber, Integer pageSize, String sortBy, boolean isAssending) {
 		// TODO Auto-generated method stub
-//		this.postRepo.findByKeyWord(keyword);
-		return null;
+		PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+		Page<Post> pagePost = this.postRepo.findPostByTitleContaining(keyword,pageRequest);
+		List<PostDto> postDtosByKeyword = pagePost.getContent().stream()
+				.map((post)->this.modelMapper.map(post, PostDto.class))
+				.collect(Collectors.toList());
+		PostResponse postResponse = new PostResponse();
+		postResponse.setLastPage(pagePost.isLast());
+		postResponse.setPageNumber(pagePost.getNumber());
+		postResponse.setPageSize(pagePost.getSize());
+		postResponse.setPosts(postDtosByKeyword);
+		postResponse.setTotalElements(pagePost.getTotalElements());
+		postResponse.setTotalPages(pagePost.getTotalPages());
+		return postResponse;
 	}
 
+	@Override
+	public PostResponse getPostByContentContaining(String keyword, Integer pageNumber, Integer pageSize, String sortBy, boolean isAssending) {
+		
+		PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+		Page<Post> pagePost = this.postRepo.findPostByContentContaining(keyword,pageRequest);
+		List<PostDto> postDtosByKeyword = pagePost.getContent().stream()
+				.map((post)->this.modelMapper.map(post, PostDto.class))
+				.collect(Collectors.toList());
+		PostResponse postResponse = new PostResponse();
+		postResponse.setLastPage(pagePost.isLast());
+		postResponse.setPageNumber(pagePost.getNumber());
+		postResponse.setPageSize(pagePost.getSize());
+		postResponse.setPosts(postDtosByKeyword);
+		postResponse.setTotalElements(pagePost.getTotalElements());
+		postResponse.setTotalPages(pagePost.getTotalPages());
+		return postResponse;
+	}
 	@Override
 	public List<PostDto> getAllPostsPage(Integer pageNumber,Integer pageSize) {
 		// TODO Auto-generated method stub

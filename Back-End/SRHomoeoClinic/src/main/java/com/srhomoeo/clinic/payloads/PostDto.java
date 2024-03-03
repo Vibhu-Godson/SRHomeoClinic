@@ -1,8 +1,11 @@
 package com.srhomoeo.clinic.payloads;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import com.srhomoeo.clinic.entities.Category;
+import com.srhomoeo.clinic.entities.Comment;
 import com.srhomoeo.clinic.entities.User;
 
 public class PostDto {
@@ -13,6 +16,13 @@ public class PostDto {
 	private Date addedDate;
 	private UserDto user;
 	private  CategoryDto category;
+	private List<CommentDto> comments = new ArrayList<>();
+	public List<CommentDto> getComments() {
+		return comments;
+	}
+	public void setComments(List<CommentDto> comments) {
+		this.comments = comments;
+	}
 	public String getTitle() {
 		return title;
 	}

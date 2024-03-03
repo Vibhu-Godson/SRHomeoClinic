@@ -18,7 +18,7 @@ public interface PostService {
 	void deletePost(Integer postId);
 	
 	// get All Posts 
-	PostResponse getAllPosts(Integer pageNumber,Integer pageSize);
+	PostResponse getAllPosts(Integer pageNumber,Integer pageSize,String sortBy,boolean isAssending);
 	
 	//get All Post applying Paging
 	List<PostDto> getAllPostsPage(Integer pageNumber,Integer pageSize);
@@ -28,11 +28,15 @@ public interface PostService {
 	PostDto getPostById(Integer postId);
 	
 	// get all Post By Category
-	List<PostDto> getPostsByCategory(Integer categoryId);
+	PostResponse getPostsByCategory(Integer categoryId, Integer pageNumber, Integer pageSize, String sortBy, boolean isAssending);
 	
 	// get All Post by User
-	List<PostDto> getPostByUser(Integer userId);
+	PostResponse getPostByUser(Integer userId, Integer pageNumber, Integer pageSize, String sortBy, boolean isAssending);
 	
-	// Search Posts by Keywords 
-	List<PostDto> searchPostByKeyword(String keyword);
+	// Search Posts by title 
+	PostResponse getPostByTitleContaining(String keyword, Integer pageNumber, Integer pageSize, String sortBy, boolean isAssending);
+	
+	// Search Post by content
+	PostResponse getPostByContentContaining(String keyword, Integer pageNumber, Integer pageSize, String sortBy, boolean isAssending);
+	
 }

@@ -1,5 +1,10 @@
 package com.srhomoeo.clinic.payloads;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.srhomoeo.clinic.entities.Comment;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -47,14 +52,7 @@ public class UserDto {
 	public UserDto() {
 		super();
 	}
-	public UserDto(int id, String name, String email, String about, String password) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.email = email;
-		this.about = about;
-		this.password = password;
-	}
+	
 	
 	
 }

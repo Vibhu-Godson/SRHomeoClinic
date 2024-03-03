@@ -1,7 +1,10 @@
 package com.srhomoeo.clinic.entities;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -35,22 +39,26 @@ public class Post {
 	
 	@ManyToOne
 	private User user;
-
-	public Post(Integer id, String title, String content, String imageName, Date addedDate, Category category,
-			User user) {
-		super();
-		this.id = id;
-		this.title = title;
-		this.content = content;
-		this.imageName = imageName;
-		this.addedDate = addedDate;
-		this.category = category;
-		this.user = user;
-	}
+	
+	@OneToMany(mappedBy="post")
+	private List<Comment> comments = new ArrayList<>();
+	
 
 	public Post() {
 		super();
 	}
+	
+	public List<Comment> getComments() {
+		return comments;
+	}
+
+
+
+	public void setComments(List<Comment> comments) {
+		this.comments = comments;
+	}
+
+
 
 	public Integer getId() {
 		return id;
